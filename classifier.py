@@ -12,7 +12,7 @@ from sklearn.model_selection import ShuffleSplit, train_test_split
 
 data_file = "PXD007612_clean.csv"
 test_size = 0.35
-cv_size = 9
+cv_size = 11
 
 
 LogiReg = LogisticRegression(solver='lbfgs', multi_class='ovr', class_weight=None, tol=1e-4)
@@ -24,7 +24,7 @@ AdaBoo = AdaBoostClassifier(n_estimators = 600)
 
 # running all of them would take at least 1 day
 funcs = [RanFor, AdaBoo, ExtTree, GradBoo, SuVeMa, LogiReg]
-funcs = [GradBoo]
+funcs = [LogiReg]
 
 print('{:<13} {:<16} {:<13} {:<16} {:<13} {:<16} {:<13} {:<16} {:<}'.format('~|Acc@Train',
                                                                                 'IQR|Acc@Train', 
@@ -51,13 +51,14 @@ for func in funcs:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=seed)
         func.set_params(random_state = seed)
         est = func.fit(X_train, y_train)
+        
         y_test_pred = est.predict(X_test)
         y_train_pred = est.predict(X_train)
-
-        scores_test.append(accuracy_score(y_test, y_test_pred))
+        
         scores_train.append(accuracy_score(y_train, y_train_pred))
-        precision.append(precision_score(y_train, y_train_pred))
-        f1.append(f1_score(y_train, y_train_pred))
+        scores_test.append(accuracy_score(y_test, y_test_pred))
+        precision.append(precision_score(y_test, y_test_pred))
+        f1.append(f1_score(y_test, y_test_pred))
 
     print('{:<13.3f} {:<16.5f} {:<13.3f} {:<16.5f} {:<13.3f} {:<16.5f} {:<13.3f} {:<16.5f} {:<}'.format(np.median(scores_train), 
                                                                                                             np.subtract(*np.percentile(scores_train, [75, 25])), 
